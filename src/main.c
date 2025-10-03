@@ -1,10 +1,15 @@
 #include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <systemd/sd-bus.h>
+#include <unistd.h>
 
 int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    fprintf(stderr, "Usage: %s <file>\n", argv[0]);
+    return 1;
+  }
+  
   sd_bus *bus = NULL;
   int r;
   r = sd_bus_open_user(&bus);
@@ -15,7 +20,7 @@ int main(int argc, char *argv[]) {
   }
 
   // lrc parse
-  char path[] = "/home/ismael/Extra/Repositorios/Mios/waybar-lrc/lrc/circle.lrc";
-  char* buffer = loadlrc(path);
+  char *path = argv[1];
+  char *buffer = loadlrc(path);
   return 0;
 }

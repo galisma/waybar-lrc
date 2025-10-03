@@ -4,6 +4,7 @@ SOURCES  := $(wildcard src/*.c)
 LDLIBS   := $(shell pkg-config --libs libsystemd)
 BUILDIR  := build
 BINARY   := waybar-module
+RUNFLAGS := lrc/circle.lrc
 
 OBJECTS  := $(SOURCES:src/%.c=${BUILDIR}/%.o)
 
@@ -24,8 +25,7 @@ ${BUILDIR}:
 
 run: ${BUILDIR}/${BINARY}
 	@echo "Ejecutando ${BINARY}..."
-	@./${BUILDIR}/${BINARY}
-
+	@./${BUILDIR}/${BINARY} ${RUNFLAGS}
 clean:
 	@echo "Limpiando archivos de construcción..."
-	@rm -rf ${BUILDIR}
+	@rm -rf ${BUILDIR} 
