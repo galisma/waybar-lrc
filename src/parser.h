@@ -1,2 +1,2 @@
 #pragma once
-int loadlrc(const char*);
+char* loadlrc(const char*);

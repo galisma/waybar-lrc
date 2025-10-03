@@ -13,8 +13,9 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Failed to connect to system bus: %s\n", strerror(-r));
     exit(0);
   }
-  char path[] = "/home/ismael/Extra/Repositorios/Mios/waybar-lrc/lrc/circle.lrc";
-  loadlrc(path);
 
+  // lrc parse
+  char path[] = "/home/ismael/Extra/Repositorios/Mios/waybar-lrc/lrc/circle.lrc";
+  char* buffer = loadlrc(path);
   return 0;
 }
