@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Usage: %s <file>\n", argv[0]);
     return 1;
   }
-  
+
   sd_bus *bus = NULL;
   int r;
   r = sd_bus_open_user(&bus);
@@ -22,5 +22,6 @@ int main(int argc, char *argv[]) {
   // lrc parse
   char *path = argv[1];
   char *buffer = loadlrc(path);
+  parselrc(buffer);
   return 0;
 }
