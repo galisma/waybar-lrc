@@ -8,8 +8,8 @@ CFLAGS   ?= -Wall -Isrc $(shell pkg-config --cflags libsystemd)
 SOURCES  := $(wildcard src/*.c)
 LDLIBS   := $(shell pkg-config --libs libsystemd)
 BUILDIR  := build/$(CONFIG)
-BINARY   := waybar-module
-RUNFLAGS := lrc/circle.lrc
+BINARY   := waybar-module-lrc
+RUNFLAGS := lrc/passing-through.lrc
 
 OBJECTS  := $(SOURCES:src/%.c=$(BUILDIR)/%.o)
 
