@@ -58,7 +58,6 @@ int readlrc(struct lyrics *songs, int line) {
   return 0;
 }
 
-
 int parselrc(const char *buffer) {
   struct lyrics *song = malloc(sizeof(struct lyrics) * 100);
   for (int j = 0; j < 50; j++) {
@@ -91,7 +90,9 @@ int parselrc(const char *buffer) {
         state = R_SECS;
         i++;
       } else {
-        i++;
+        while (buffer[i] != '\n') {
+          i++;
+        }
       }
       break;
 
@@ -106,7 +107,7 @@ int parselrc(const char *buffer) {
         state = R_CSECS;
         i++;
       } else {
-        i++; // unexpected chars
+        i++;
       }
       break;
 
