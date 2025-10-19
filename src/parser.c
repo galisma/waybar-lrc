@@ -12,7 +12,7 @@ typedef struct lyrics {
   int length;
 } lyrics;
 
-typedef enum { R_MINS, R_SECS, R_MSEC, R_TEXT } State;
+typedef enum { R_MINS, R_SECS, R_CSECS, R_TEXT } State;
 
 char *loadlrc(const char *path) {
   int fd = open(path, O_RDONLY);
@@ -39,11 +39,25 @@ char *loadlrc(const char *path) {
   }
 
   buffer[st.st_size] = '\0';
-
+#ifdef DEBUG
   printf("Archivo cargado correctamente\n");
+#endif
   close(fd);
   return buffer;
 }
+
+int readlrc(struct lyrics *songs, int line) {
+  for (int i = 0; i < line; i++) {
+    if (i > 0) {
+      int diff = songs[i].time - songs[i - 1].time;
+      usleep(diff * 10000);
+    }
+    write(1, songs[i].sentence, songs[i].length);
+    write(1, "\n", 1);
+  }
+  return 0;
+}
+
 
 int parselrc(const char *buffer) {
   struct lyrics *song = malloc(sizeof(struct lyrics) * 100);
@@ -59,7 +73,7 @@ int parselrc(const char *buffer) {
 
   // temp vars for time count
   int current_num = 0;
-  int mins = 0, secs = 0, msecs = 0;
+  int mins = 0, secs = 0, csecs = 0;
 
   while (buffer[i] != '\0' && line < 100) {
     switch (state) {
@@ -67,7 +81,7 @@ int parselrc(const char *buffer) {
       if (buffer[i] == '[') {
         i++;
         current_num = 0;
-        mins = secs = msecs = 0;
+        mins = secs = csecs = 0;
       } else if (isdigit(buffer[i])) {
         current_num = current_num * 10 + (buffer[i] - '0');
         i++;
@@ -89,21 +103,21 @@ int parselrc(const char *buffer) {
       } else if (buffer[i] == '.') {
         secs = current_num;
         current_num = 0;
-        state = R_MSEC;
+        state = R_CSECS;
         i++;
       } else {
         i++; // unexpected chars
       }
       break;
 
-    // Milliseconds mode
-    case R_MSEC:
+    // hundredths of a second
+    case R_CSECS:
       if (isdigit(buffer[i])) {
         current_num = current_num * 10 + (buffer[i] - '0');
         i++;
       } else if (buffer[i] == ']') {
-        msecs = current_num;
-        song[line].time = (mins * 60000) + (secs * 1000) + msecs;
+        csecs = current_num;
+        song[line].time = (mins * 6000) + (secs * 100) + csecs;
         current_num = 0;
         state = R_TEXT;
         i++;
@@ -141,11 +155,12 @@ int parselrc(const char *buffer) {
 #ifdef DEBUG
   printf("Líneas parseadas: %d\n", line - 1);
   for (int j = 0; j < line; j++) {
-    printf("Línea %d: Tiempo=%dms, Longitud=%d, Texto='%.*s'\n", j,
+    printf("Línea %d: Tiempo=%dcs, Longitud=%d, Texto='%.*s'\n", j,
            song[j].time, song[j].length, song[j].length, song[j].sentence);
   }
 #endif
 
   // TODO: free(song)
+  readlrc(song, line);
   return line;
 }
