@@ -6,11 +6,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-typedef struct letras {
+typedef struct lyrics {
   int time;
   char *sentence;
   int length;
-} letras;
+} lyrics;
 
 typedef enum { R_MINS, R_SECS, R_MSEC, R_TEXT } State;
 
@@ -46,7 +46,7 @@ char *loadlrc(const char *path) {
 }
 
 int parselrc(const char *buffer) {
-  struct letras *song = malloc(sizeof(struct letras) * 100);
+  struct lyrics *song = malloc(sizeof(struct lyrics) * 100);
   for (int j = 0; j < 50; j++) {
     song[j].sentence = NULL;
     song[j].length = 0;
@@ -61,7 +61,7 @@ int parselrc(const char *buffer) {
   int current_num = 0;
   int mins = 0, secs = 0, msecs = 0;
 
-  while (buffer[i] != '\0' && line < 50) {
+  while (buffer[i] != '\0' && line < 100) {
     switch (state) {
     case R_MINS:
       if (buffer[i] == '[') {
@@ -139,7 +139,7 @@ int parselrc(const char *buffer) {
   }
 
 #ifdef DEBUG
-  printf("Líneas parseadas: %d\n", line-1);
+  printf("Líneas parseadas: %d\n", line - 1);
   for (int j = 0; j < line; j++) {
     printf("Línea %d: Tiempo=%dms, Longitud=%d, Texto='%.*s'\n", j,
            song[j].time, song[j].length, song[j].length, song[j].sentence);
