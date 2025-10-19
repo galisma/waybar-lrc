@@ -1,3 +1,5 @@
 build/
 .vscode/
+
 *.opus
+*.mp3
