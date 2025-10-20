@@ -51,6 +51,9 @@ int readlrc(struct lyrics *songs, int line) {
     if (i > 0) {
       int diff = songs[i].time - songs[i - 1].time;
       usleep(diff * 10000);
+    } else {
+      int diff = songs[i].time;
+      usleep(diff * 10000);
     }
     write(1, songs[i].sentence, songs[i].length);
     write(1, "\n", 1);
@@ -89,10 +92,14 @@ int parselrc(const char *buffer) {
         current_num = 0;
         state = R_SECS;
         i++;
-      } else {
-        while (buffer[i] != '\n') {
+      } else if (!isdigit(buffer[i])) {
+        while (buffer[i] != '\n' && buffer[i] != '\0')
           i++;
-        }
+        if (buffer[i] == '\n')
+          i++;
+        break;
+      } else {
+        i++;
       }
       break;
 
@@ -154,9 +161,9 @@ int parselrc(const char *buffer) {
   }
 
 #ifdef DEBUG
-  printf("Líneas parseadas: %d\n", line - 1);
+  printf("Líneas parseadas: %d\n", line);  // Corregido: line en lugar de line-1
   for (int j = 0; j < line; j++) {
-    printf("Línea %d: Tiempo=%dcs, Longitud=%d, Texto='%.*s'\n", j,
+    printf("Línea %d: tiempo=%dcs, longitud=%d, texto='%.*s'\n", j,  // Corregido tipeos
            song[j].time, song[j].length, song[j].length, song[j].sentence);
   }
 #endif
