@@ -3,3 +3,5 @@ build/
 
 *.opus
 *.mp3
+
+compile_commands.json

@@ -171,4 +171,5 @@ int parselrc(const char *buffer) {
   // TODO: free(song)
   readlrc(song, line);
   return line;
+  
 }

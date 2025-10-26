@@ -1,52 +1,58 @@
-# Configuración de construcción (debug/release)
-# Para cambiar: make CONFIG=debug
-CONFIG ?= debug
-
-# Compilador y banderas base
+# Compiler vars
 CC       ?= clang
-CFLAGS   ?= -Wall -Isrc $(shell pkg-config --cflags libsystemd)
-SOURCES  := $(wildcard src/*.c)
+CFLAGS   ?= -Wall -Isrc -Iheader $(shell pkg-config --cflags libsystemd)
 LDLIBS   := $(shell pkg-config --libs libsystemd)
-BUILDIR  := build/$(CONFIG)
-BINARY   := waybar-module-lrc
-RUNFLAGS := lrc/passing-through.lrc
 
-OBJECTS  := $(SOURCES:src/%.c=$(BUILDIR)/%.o)
+# Main bin vars
+TARGET   := waybar-module-lrc
+SRC      := src/main.c src/parser.c
+OBJ      := $(patsubst src/%.c, build/%.o, $(SRC))
 
-# Configuración específica para Debug/Release
-ifeq ($(CONFIG),debug)
-  CFLAGS += -O0 -g -DDEBUG
-else ifeq ($(CONFIG),release)
-  CFLAGS += -O2 -DNDEBUG
-else
-  $(error CONFIG debe ser "debug" o "release")
-endif
+# Test vars
+TESTS        := $(wildcard test/*.c)
+TEST_OBJECTS := $(patsubst test/%.c, test/%.o, $(TESTS))
+TEST_BIN     := $(patsubst test/%.c, test/%, $(TESTS))
 
-.PHONY: all run debug release clean
+ARGS         := lrc/circle.lrc
 
-all: $(BUILDIR)/$(BINARY)
+# Main bin
+all: build/$(TARGET)
 
-debug:
-	@$(MAKE) CONFIG=debug
+build/$(TARGET): $(OBJ)
+	@mkdir -p build
+	$(CC) $(OBJ) -o $@ $(LDLIBS)
 
-release:
-	@$(MAKE) CONFIG=release
-
-$(BUILDIR)/$(BINARY): $(OBJECTS)
-	@echo "Enlazando binario ($(CONFIG))..."
-	$(CC) $(OBJECTS) -o $@ $(LDLIBS)
-
-$(BUILDIR)/%.o: src/%.c | $(BUILDIR)
-	@echo "Compilando $< ($(CONFIG))..."
+# Objects
+build/%.o: src/%.c
+	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDIR):
-	@mkdir -p $@
+test/%.o: test/%.c
+	@mkdir -p test
+	$(CC) $(CFLAGS) -c $< -o $@
 
-run: $(BUILDIR)/$(BINARY)
-	@echo "Ejecutando $(BINARY) ($(CONFIG))..."
-	@./$(BUILDIR)/$(BINARY) $(RUNFLAGS)
+# Compile test
+test: $(TEST_BIN)
 
+test/%: test/%.o build/parser.o
+	$(CC) $^ -o $@ $(LDLIBS)
+
+# Run test
+run_tests: test
+	@for t in $(TEST_BIN); do \
+		echo "Running $$t..."; \
+		./$$t; \
+	done
+
+# Run main
+run_main: build/$(TARGET)
+	./build/$(TARGET) $(ARGS)
+
+# Run
+run: run_tests run_main
+
+# Clean
 clean:
-	@echo "Limpiando archivos de construcción..."
-	@rm -rf build
+	rm -rf build test/*.o $(TEST_BIN)
+
+.PHONY: all clean run tests run_tests run_main
