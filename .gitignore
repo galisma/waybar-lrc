@@ -1,5 +1,8 @@
 build/
 .vscode/
+.cache/
+/test/test
+/test/test.o
 
 *.opus
 *.mp3
